@@ -4,16 +4,25 @@ const moment = require("moment");
 const bodyParser = require("body-parser");
 const app = express();
 
-const conn = mysql.createConnection({
-  // 创建mysql实例
-  host: "127.0.0.1",
-  port: "3306",
-  user: "root",
-  password: "lalala15886",
-  database: "wordsDatabase"
-});
+// const conn = mysql.createConnection({
+//   // 创建mysql实例
+//   host: "us-cdbr-iron-east-01.cleardb.net",
+//   port: "3306",
+//   user: "bb487ddf5be294",
+//   password: "6a4d8484",
+//   database: "heroku_25f0309602332ab"
+// });
 
-app.use(function(req, res, next) {
+const conn = mysql.createConnection({
+    // 创建mysql实例
+    host: "127.0.0.1",
+    port: "3306",
+    user: "root",
+    password: "lalala15886",
+    database: "wordsDatabase"
+  });
+
+app.use(function (req, res, next) {
   // 解決跨域
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
@@ -22,17 +31,13 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.set("port", process.env.PORT || 3001);
-
 app.use(bodyParser.json()); // for parsing application/json
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.listen(app.get("port"), function() {
-  console.log("express started on port 3001");
-});
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 
 // GET:QUERY, POST: BODY
-app.post("/login", function(req, res) {
+app.post("/login", function (req, res) {
   // 一般的登入
   let personId = req.body.openId;
   let personName = req.body.name;
@@ -74,7 +79,7 @@ app.post("/login", function(req, res) {
   });
 });
 
-app.post("/wechatLogin", function(req, res) {
+app.post("/wechatLogin", function (req, res) {
   let personId = req.body.openId;
   let personName = req.body.name;
 
@@ -123,21 +128,21 @@ app.post("/wechatLogin", function(req, res) {
   });
 });
 
-app.post("/rawLoad", function(req, res) {
+app.post("/rawLoad", function (req, res) {
   let rawLoadSQL = `SELECT * FROM target`;
   conn.query(rawLoadSQL, (err, result) => {
     res.send(result);
   });
 });
 
-app.post("/load", function(req, res) {
+app.post("/load", function (req, res) {
   let personName = req.body.name;
   let personId = req.body.openId;
   let personWholeData;
-  let readTarget = `SELECT * FROM target;`;
+  let readTargetSQL = `SELECT * FROM target;`;
   // 把raw的單字庫都讀出來(有中文、音標、例句等資料)
 
-  conn.query(readTarget, (err, wholeData) => {
+  conn.query(readTargetSQL, (err, wholeData) => {
     personWholeData = wholeData; // 創一個新的變數去做操作
 
     for (let i = 0; i < personWholeData.length; i++) {
@@ -165,7 +170,7 @@ app.post("/load", function(req, res) {
   });
 });
 
-app.post("/reset", function(req, res) {
+app.post("/reset", function (req, res) {
   let personName = req.body.name;
   let personId = req.body.openId;
   let resetUserDataSQL = `UPDATE ${personId} SET cannotMemoryCount=0`;
@@ -176,7 +181,7 @@ app.post("/reset", function(req, res) {
   });
 });
 
-app.post("/count", function(req, res) {
+app.post("/count", function (req, res) {
   // req.body[0]: count, [1]: id, [2]: curUserInfo
 
   let personId = req.body[2].openId;
@@ -193,7 +198,7 @@ app.post("/count", function(req, res) {
   });
 });
 
-app.post("/register", function(req, res) {
+app.post("/register", function (req, res) {
   let personName = req.body.name;
   let personId = req.body.openId;
 
@@ -241,3 +246,5 @@ function addUser(personId, personName, callback) {
     });
   });
 }
+
+module.exports = app;
